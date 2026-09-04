@@ -1,31 +1,31 @@
 package cl.ozzylatorlabs.cosmoratv
 
 object ChannelCatalog {
-    // Catálogo revisado para Cosmora TV.
-    // Prioridad: player oficial enlazado por el propio canal, YouTube oficial o HLS público del proveedor del canal.
-    // No se usan proxies jmp2.uk ni URLs extraídas desde APIs privadas de otras apps.
-    // CHV y TV+ restauran los HLS exactos de la APK base que el usuario ya había probado funcionando.
-    // Antes de publicar en Google Play se hará una última auditoría de derechos/uso de cada señal.
+    // Cosmora TV V1.1
+    // Criterio para publicación: reproductor nativo solo cuando la fuente está verificada para integración.
+    // Para señales nacionales sin autorización expresa de redistribución, Cosmora abre la señal oficial del canal.
     val channels = listOf(
         Channel(
             name = "Mega",
-            category = "Chile · Nacional",
-            streamUrl = "https://unlimited1-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
+            category = "Chile · Nacional · Señal oficial",
             websiteUrl = "https://www.mega.cl/senal-en-vivo/",
-            note = "Señal online de Mega",
-            verifiedDirectStream = true
+            note = "Abrir señal oficial de Mega"
         ),
         Channel(
             name = "Chilevisión",
-            category = "Chile · Nacional",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/R6cwOFyHQXaW6-kMcfWYKA/master.m3u8",
+            category = "Chile · Nacional · Señal oficial",
             websiteUrl = "https://www.chilevision.cl/senal-online/",
-            note = "HLS funcional recuperado de la APK base",
-            verifiedDirectStream = false
+            note = "Abrir señal oficial de Chilevisión"
+        ),
+        Channel(
+            name = "Canal 13",
+            category = "Chile · Nacional · Señal oficial",
+            websiteUrl = "https://www.13go.cl/en-vivo?sid=13",
+            note = "Abrir señal oficial de Canal 13"
         ),
         Channel(
             name = "TVN",
-            category = "Chile · Nacional · Embed oficial",
+            category = "Chile · Nacional · Player oficial",
             webEmbedUrl = "https://live.tvn.cl/?volume=0",
             websiteUrl = "https://www.tvn.cl/embed-no-borrar-senal-en-vivo",
             note = "Player oficial de TVN"
@@ -35,7 +35,7 @@ object ChannelCatalog {
             category = "Chile · Noticias",
             streamUrl = "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
             websiteUrl = "https://www.24horas.cl/envivo/",
-            note = "Señal oficial 24 Horas",
+            note = "Señal 24 Horas",
             verifiedDirectStream = true
         ),
         Channel(
@@ -60,26 +60,16 @@ object ChannelCatalog {
             verifiedDirectStream = true
         ),
         Channel(
-            name = "Canal 13",
-            category = "Chile · YouTube oficial",
-            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UCd4D3LfXC_9MY2zSv_3gMgw&autoplay=1&playsinline=1",
-            websiteUrl = "https://www.13go.cl/en-vivo?sid=13",
-            note = "YouTube oficial cuando El 13 transmite en vivo"
-        ),
-        Channel(
             name = "T13",
-            category = "Chile · Noticias · YouTube oficial",
-            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UCsRnhjcUCR78Q3Ud6OXCTNg&autoplay=1&playsinline=1",
+            category = "Chile · Noticias · Señal oficial",
             websiteUrl = "https://www.t13.cl/en-vivo",
-            note = "T13 EN VIVO oficial"
+            note = "Abrir señal oficial de T13"
         ),
         Channel(
             name = "TV+",
-            category = "Chile · Entretención",
-            streamUrl = "https://jireh-8-hls-video-us-isp.dps.live/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
+            category = "Chile · Entretención · Señal oficial",
             websiteUrl = "https://www.tvmas.tv/page/en-vivo/",
-            note = "HLS funcional recuperado de la APK base",
-            verifiedDirectStream = false
+            note = "Abrir señal oficial de TV+"
         ),
         Channel(
             name = "Canal 9 Bío Bío",

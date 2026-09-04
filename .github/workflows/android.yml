@@ -6,12 +6,11 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,13 +39,13 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Cosmora-TV-V1.0.apk
-          cp app/build/outputs/bundle/debug/app-debug.aab Cosmora-TV-V1.0.aab
+          cp app/build/outputs/apk/debug/app-debug.apk Cosmora-TV-V1.1.apk
+          cp app/build/outputs/bundle/debug/app-debug.aab Cosmora-TV-V1.1.aab
 
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: Cosmora-TV-V1.0
+          name: Cosmora-TV-V1.1
           path: |
-            Cosmora-TV-V1.0.apk
-            Cosmora-TV-V1.0.aab
+            Cosmora-TV-V1.1.apk
+            Cosmora-TV-V1.1.aab

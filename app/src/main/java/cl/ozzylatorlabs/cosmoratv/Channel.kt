@@ -11,4 +11,5 @@ data class Channel(
 ) {
     val playsInsideApp: Boolean get() = !streamUrl.isNullOrBlank()
     val playsAsWeb: Boolean get() = streamUrl.isNullOrBlank() && !webEmbedUrl.isNullOrBlank()
+    val opensOfficialSite: Boolean get() = streamUrl.isNullOrBlank() && webEmbedUrl.isNullOrBlank() && !websiteUrl.isNullOrBlank()
 }
