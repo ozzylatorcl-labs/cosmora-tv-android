@@ -4,12 +4,15 @@ data class Channel(
     val name: String,
     val category: String,
     val streamUrl: String? = null,
-    val webEmbedUrl: String? = null,
+    val backupStreamUrls: List<String> = emptyList(),
     val websiteUrl: String? = null,
-    val note: String = "En vivo",
-    val verifiedDirectStream: Boolean = false
+    val note: String = "En vivo"
 ) {
-    val playsInsideApp: Boolean get() = !streamUrl.isNullOrBlank()
-    val playsAsWeb: Boolean get() = streamUrl.isNullOrBlank() && !webEmbedUrl.isNullOrBlank()
-    val opensOfficialSite: Boolean get() = streamUrl.isNullOrBlank() && webEmbedUrl.isNullOrBlank() && !websiteUrl.isNullOrBlank()
+    val playbackUrls: List<String>
+        get() = buildList {
+            streamUrl?.takeIf { it.isNotBlank() }?.let(::add)
+            backupStreamUrls.filter { it.isNotBlank() }.forEach(::add)
+        }.distinct()
+
+    val playsInsideApp: Boolean get() = playbackUrls.isNotEmpty()
 }
