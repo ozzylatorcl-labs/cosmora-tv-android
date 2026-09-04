@@ -13,12 +13,15 @@ public partial class MainWindow : Window
     private LibVLC? _libVlc;
     private MediaPlayer? _player;
     private Media? _currentMedia;
+    private readonly List<Media> _retiredMedia = new();
     private IReadOnlyList<string> _currentSources = Array.Empty<string>();
     private int _sourceIndex;
     private int _selectedIndex;
     private bool _radioMode;
     private bool _fullscreen;
     private bool _closing;
+    private bool _fallbackScheduled;
+    private DateTime _ignoreErrorsUntilUtc = DateTime.MinValue;
     private WindowState _normalState = WindowState.Normal;
     private WindowStyle _normalStyle = WindowStyle.SingleBorderWindow;
     private ResizeMode _normalResizeMode = ResizeMode.CanResize;
@@ -35,10 +38,11 @@ public partial class MainWindow : Window
         {
             Core.Initialize();
             _libVlc = new LibVLC(
-                "--network-caching=1400",
-                "--live-caching=1200",
+                "--network-caching=1800",
+                "--live-caching=1500",
                 "--clock-jitter=0",
-                "--clock-synchro=0"
+                "--clock-synchro=0",
+                "--no-video-title-show"
             );
 
             _player = new MediaPlayer(_libVlc)
@@ -67,9 +71,11 @@ public partial class MainWindow : Window
         }
     }
 
+    // Los eventos de LibVLC llegan desde hilos nativos. Nunca usamos Dispatcher.Invoke
+    // sincrónico aquí: al cambiar de canal podía bloquearse VLC esperando a la interfaz.
     private void Player_Playing(object? sender, EventArgs e)
     {
-        Dispatcher.Invoke(() =>
+        UiAsync(() =>
         {
             HideStatus();
             PlayPauseButton.Content = "❚❚  Pausa";
@@ -78,32 +84,42 @@ public partial class MainWindow : Window
 
     private void Player_Paused(object? sender, EventArgs e)
     {
-        Dispatcher.Invoke(() => PlayPauseButton.Content = "▶  Play");
+        UiAsync(() => PlayPauseButton.Content = "▶  Play");
     }
 
     private void Player_Stopped(object? sender, EventArgs e)
     {
         if (_closing) return;
-        Dispatcher.Invoke(() => PlayPauseButton.Content = "▶  Play");
+        UiAsync(() => PlayPauseButton.Content = "▶  Play");
     }
 
     private void Player_EncounteredError(object? sender, EventArgs e)
     {
-        if (_closing) return;
+        if (_closing || DateTime.UtcNow < _ignoreErrorsUntilUtc) return;
 
-        Dispatcher.BeginInvoke(() =>
+        UiAsync(() =>
         {
-            if (_sourceIndex + 1 < _currentSources.Count)
+            if (_closing || _fallbackScheduled) return;
+            _fallbackScheduled = true;
+
+            try
             {
-                _sourceIndex++;
-                ShowStatus("Probando fuente alternativa…");
-                StartSource(_currentSources[_sourceIndex]);
+                if (_sourceIndex + 1 < _currentSources.Count)
+                {
+                    _sourceIndex++;
+                    ShowStatus("Probando fuente alternativa…");
+                    StartSource(_currentSources[_sourceIndex]);
+                }
+                else
+                {
+                    ShowStatus(_radioMode
+                        ? "Esta radio no está disponible en este momento"
+                        : "Esta señal no está disponible en este momento");
+                }
             }
-            else
+            finally
             {
-                ShowStatus(_radioMode
-                    ? "Esta radio no está disponible en este momento"
-                    : "Esta señal no está disponible en este momento");
+                _fallbackScheduled = false;
             }
         });
     }
@@ -244,10 +260,21 @@ public partial class MainWindow : Window
     {
         if (_player is null || _libVlc is null) return;
 
-        _player.Stop();
-        _currentMedia?.Dispose();
-        _currentMedia = null;
+        // Ignora eventos tardíos de la señal anterior durante el cambio.
+        _ignoreErrorsUntilUtc = DateTime.UtcNow.AddMilliseconds(750);
+        _fallbackScheduled = false;
         _sourceIndex = 0;
+
+        try
+        {
+            _player.Stop();
+        }
+        catch
+        {
+            // Si VLC ya estaba detenido, continuamos con la siguiente señal.
+        }
+
+        RetireCurrentMedia();
 
         if (_radioMode)
         {
@@ -268,25 +295,52 @@ public partial class MainWindow : Window
         }
 
         ShowStatus("Conectando…");
-        StartSource(_currentSources[0]);
+
+        // Deja terminar completamente el Stop anterior antes de abrir el nuevo HLS.
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            if (!_closing && _currentSources.Count > 0)
+                StartSource(_currentSources[0]);
+        }));
     }
 
     private void StartSource(string source)
     {
-        if (_player is null || _libVlc is null) return;
+        if (_player is null || _libVlc is null || _closing) return;
 
         try
         {
-            _currentMedia?.Dispose();
-            _currentMedia = new Media(_libVlc, new Uri(source));
-            _currentMedia.AddOption(":network-caching=1400");
-            _currentMedia.AddOption(":live-caching=1200");
-            _player.Play(_currentMedia);
+            RetireCurrentMedia();
+
+            var media = new Media(_libVlc, new Uri(source, UriKind.Absolute));
+            media.AddOption(":network-caching=1800");
+            media.AddOption(":live-caching=1500");
+            media.AddOption(":http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) CosmoraTV/1.1");
+            media.AddOption(":no-video-title-show");
+
+            _currentMedia = media;
+            _ignoreErrorsUntilUtc = DateTime.UtcNow.AddMilliseconds(350);
+
+            if (!_player.Play(media))
+            {
+                // Play() puede devolver false sin lanzar excepción.
+                UiAsync(() => Player_EncounteredError(this, EventArgs.Empty));
+            }
         }
         catch
         {
-            Player_EncounteredError(this, EventArgs.Empty);
+            UiAsync(() => Player_EncounteredError(this, EventArgs.Empty));
         }
+    }
+
+    private void RetireCurrentMedia()
+    {
+        if (_currentMedia is null) return;
+
+        // No se libera aquí. LibVLC puede seguir terminando callbacks nativos de la señal
+        // anterior durante unos instantes; liberar el Media inmediatamente era inestable.
+        _retiredMedia.Add(_currentMedia);
+        _currentMedia = null;
     }
 
     private void SetRadioArtwork(string? artworkUrl)
@@ -426,6 +480,12 @@ public partial class MainWindow : Window
 
     private void HideStatus() => StatusPanel.Visibility = Visibility.Collapsed;
 
+    private void UiAsync(Action action)
+    {
+        if (_closing || Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+        Dispatcher.BeginInvoke(action);
+    }
+
     private static SolidColorBrush BrushFromHex(string hex)
     {
         return (SolidColorBrush)new BrushConverter().ConvertFromString(hex)!;
@@ -438,11 +498,28 @@ public partial class MainWindow : Window
         {
             if (_player is not null)
             {
+                _player.Playing -= Player_Playing;
+                _player.Paused -= Player_Paused;
+                _player.Stopped -= Player_Stopped;
+                _player.EncounteredError -= Player_EncounteredError;
                 _player.Stop();
-                _player.Dispose();
             }
+
+            VideoView.MediaPlayer = null;
+
             _currentMedia?.Dispose();
+            _currentMedia = null;
+
+            foreach (var media in _retiredMedia)
+            {
+                try { media.Dispose(); } catch { }
+            }
+            _retiredMedia.Clear();
+
+            _player?.Dispose();
+            _player = null;
             _libVlc?.Dispose();
+            _libVlc = null;
         }
         catch
         {
