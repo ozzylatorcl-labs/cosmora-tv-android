@@ -57,14 +57,14 @@ jobs:
       - name: Package portable build
         shell: pwsh
         run: |
-          Compress-Archive -Path windows/publish/* -DestinationPath Cosmora-TV-Windows-Portable-V1.0.zip -Force
-          Copy-Item windows/dist/Cosmora-TV-Windows-Setup-V1.0.exe Cosmora-TV-Windows-Setup-V1.0.exe
+          Compress-Archive -Path windows/publish/* -DestinationPath Cosmora-TV-Windows-Portable-V1.1.zip -Force
+          Copy-Item windows/dist/Cosmora-TV-Windows-Setup-V1.1.exe Cosmora-TV-Windows-Setup-V1.1.exe
 
       - name: Upload Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: Cosmora-TV-Windows-V1.0
+          name: Cosmora-TV-Windows-V1.1
           path: |
-            Cosmora-TV-Windows-Setup-V1.0.exe
-            Cosmora-TV-Windows-Portable-V1.0.zip
+            Cosmora-TV-Windows-Setup-V1.1.exe
+            Cosmora-TV-Windows-Portable-V1.1.zip
           compression-level: 6
