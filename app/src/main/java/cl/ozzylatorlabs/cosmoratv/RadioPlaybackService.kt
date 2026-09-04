@@ -68,7 +68,7 @@ class RadioPlaybackService : MediaSessionService() {
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this)
                 .setChannelId("cosmora_radio_playback")
-                .setChannelName("Radios de Cosmora")
+                .setChannelName(R.string.radio_playback_channel_name)
                 .setNotificationId(616)
                 .build()
         )
