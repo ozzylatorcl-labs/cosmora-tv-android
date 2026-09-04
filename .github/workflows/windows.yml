@@ -1,0 +1,70 @@
+name: Build Cosmora TV Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "windows/**"
+      - ".github/workflows/windows.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Prepare Cosmora artwork
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          python windows/tools/prepare_assets.py
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore windows/CosmoraTV.Windows/CosmoraTV.Windows.csproj
+
+      - name: Publish Windows x64
+        shell: pwsh
+        run: |
+          dotnet publish windows/CosmoraTV.Windows/CosmoraTV.Windows.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o windows/publish
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          if (!(Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows/installer.iss
+
+      - name: Package portable build
+        shell: pwsh
+        run: |
+          Compress-Archive -Path windows/publish/* -DestinationPath Cosmora-TV-Windows-Portable-V1.0.zip -Force
+          Copy-Item windows/dist/Cosmora-TV-Windows-Setup-V1.0.exe Cosmora-TV-Windows-Setup-V1.0.exe
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cosmora-TV-Windows-V1.0
+          path: |
+            Cosmora-TV-Windows-Setup-V1.0.exe
+            Cosmora-TV-Windows-Portable-V1.0.zip
+          compression-level: 6

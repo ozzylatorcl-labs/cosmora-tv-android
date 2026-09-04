@@ -1,0 +1,214 @@
+<Window x:Class="CosmoraTV.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
+        Title="Cosmora TV" Width="1380" Height="820" MinWidth="1050" MinHeight="650"
+        WindowStartupLocation="CenterScreen" Background="#090D15"
+        KeyDown="Window_KeyDown" Closing="Window_Closing">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#111823"/>
+        <SolidColorBrush x:Key="Panel2Brush" Color="#192333"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4E8CFF"/>
+        <SolidColorBrush x:Key="RedBrush" Color="#E53B44"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#9AA6B8"/>
+
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="{TemplateBinding Background}" CornerRadius="13" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#25334A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#1B2638"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="{TemplateBinding Background}" CornerRadius="14" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#2A3B58"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.75"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CardButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#111823"/>
+            <Setter Property="BorderBrush" Value="#263247"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="205"/>
+            <Setter Property="Height" Value="108"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="17" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#1C293D"/>
+                                <Setter TargetName="B" Property="BorderBrush" Value="#4E8CFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SidebarColumn" Width="230"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border x:Name="Sidebar" Grid.Column="0" Background="#0D131D" Margin="14" CornerRadius="22" Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,5,0,22">
+                    <Image Source="Assets/cosmora.png" Width="118" Height="118" Stretch="Uniform"/>
+                    <TextBlock Text="COSMORA TV" Foreground="White" FontWeight="Bold" FontSize="20" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    <TextBlock Text="Ozzylator Labs" Foreground="#8D9AAF" FontSize="12" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1">
+                    <Button x:Name="TvButton" Style="{StaticResource NavButton}" Click="TvButton_Click" Background="#1C2B42">
+                        <TextBlock Text="▣   Televisión"/>
+                    </Button>
+                    <Button x:Name="RadioButton" Style="{StaticResource NavButton}" Click="RadioButton_Click">
+                        <TextBlock Text="●   Radios"/>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Row="3" Background="#111823" CornerRadius="14" Padding="12" Margin="0,14,0,0">
+                    <StackPanel>
+                        <TextBlock Text="COSMORA · WINDOWS" Foreground="#AFC6F3" FontWeight="SemiBold" FontSize="11"/>
+                        <TextBlock Text="Versión privada de prueba" Foreground="#78869B" FontSize="10" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid x:Name="ContentGrid" Grid.Column="1" Margin="10,14,18,14">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="HeaderRow" Height="78"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition x:Name="ControlsRow" Height="72"/>
+                <RowDefinition x:Name="ListRow" Height="172"/>
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="HeaderPanel" Grid.Row="0">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="SectionTitle" Text="Televisión" Foreground="White" FontWeight="Bold" FontSize="30"/>
+                    <TextBlock x:Name="SectionSubtitle" Text="15 señales chilenas" Foreground="#8D9AAF" FontSize="13"/>
+                </StackPanel>
+                <Border HorizontalAlignment="Right" VerticalAlignment="Center" Background="#C92D36" CornerRadius="15" Padding="14,7">
+                    <TextBlock x:Name="LiveBadge" Text="EN VIVO" Foreground="White" FontWeight="Bold" FontSize="11"/>
+                </Border>
+            </Grid>
+
+            <Border x:Name="PlayerShell" Grid.Row="1" Background="Black" CornerRadius="22" ClipToBounds="True" BorderBrush="#263247" BorderThickness="1">
+                <Grid>
+                    <vlc:VideoView x:Name="VideoView" MouseDoubleClick="VideoView_MouseDoubleClick"/>
+
+                    <Grid x:Name="RadioPanel" Visibility="Collapsed" Background="#080B11">
+                        <Ellipse Width="420" Height="420" Fill="#18263D" Opacity="0.32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="520">
+                            <Border Width="168" Height="168" CornerRadius="32" Background="#111823" BorderBrush="#2A3C58" BorderThickness="1" HorizontalAlignment="Center">
+                                <Image x:Name="RadioArtwork" Source="Assets/cosmora.png" Stretch="Uniform" Margin="12"/>
+                            </Border>
+                            <TextBlock x:Name="RadioName" Text="Radio S474N4zZ" Foreground="White" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,18,0,0"/>
+                            <TextBlock x:Name="RadioSubtitle" Text="Rock &amp; Metal · Villa Alemana" Foreground="#9AA9BD" FontSize="15" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <TextBlock Text="COSMORA RADIOS" Foreground="#4E8CFF" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border HorizontalAlignment="Left" VerticalAlignment="Top" Background="#CC0E141F" CornerRadius="0,0,15,0" Padding="15,9">
+                        <StackPanel>
+                            <TextBlock x:Name="NowTitle" Text="TVN" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="NowSubtitle" Text="Chile · TV Abierta · Nacional" Foreground="#A4AFBF" FontSize="10"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border x:Name="StatusPanel" Visibility="Collapsed" Background="#D30A0F18" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="18" Padding="22,14">
+                        <TextBlock x:Name="StatusText" Text="Conectando…" Foreground="White" FontSize="15"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Button Style="{StaticResource ActionButton}" Click="Previous_Click" Content="◀  Anterior"/>
+                    <Button x:Name="PlayPauseButton" Style="{StaticResource ActionButton}" Click="PlayPause_Click" Content="❚❚  Pausa"/>
+                    <Button Style="{StaticResource ActionButton}" Click="Next_Click" Content="Siguiente  ▶"/>
+                    <Button x:Name="MuteButton" Style="{StaticResource ActionButton}" Click="Mute_Click" Content="🔊  Sonido"/>
+                    <Button x:Name="FullscreenButton" Style="{StaticResource ActionButton}" Click="Fullscreen_Click" Content="⛶  Pantalla completa"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="VOL" Foreground="#78869B" FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Slider x:Name="VolumeSlider" Width="120" Minimum="0" Maximum="100" Value="85" ValueChanged="VolumeSlider_ValueChanged"/>
+                </StackPanel>
+            </Grid>
+
+            <Border x:Name="ListSection" Grid.Row="3" Background="#0D131D" CornerRadius="19" Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="34"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="ListTitle" Text="Canales" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" CanContentScroll="True">
+                        <StackPanel x:Name="ItemsPanel" Orientation="Horizontal"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
