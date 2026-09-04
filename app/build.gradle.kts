@@ -12,8 +12,8 @@ android {
         applicationId = "cl.ozzylatorlabs.cosmoratv"
         minSdk = 23
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
     }
 
     buildFeatures { compose = true }
@@ -36,4 +36,5 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.9.3")
     implementation("androidx.media3:media3-exoplayer-hls:1.9.3")
     implementation("androidx.media3:media3-ui:1.9.3")
+    implementation("androidx.media3:media3-session:1.9.3")
 }
