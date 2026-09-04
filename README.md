@@ -14,6 +14,7 @@ Aplicación Android + Android TV de televisión en vivo desarrollada por **Ozzyl
 - Nombre: **Cosmora TV**
 - Package: `cl.ozzylatorlabs.cosmoratv`
 - Versión inicial: `1.0`
+- Lema: **Tu universo en una pantalla**
 
 ## Google Play
-Antes de publicación se revisará nuevamente el origen y los derechos de cada señal, ficha de privacidad, Data Safety, icono, banner TV y capturas.
+La base apunta a Android 16 / API 36 para cumplir el requisito actual de nuevas apps móviles en Google Play. Antes de publicación se revisará nuevamente el origen y los derechos de cada señal, ficha de privacidad, Data Safety, firma de lanzamiento, icono, banner TV y capturas.
