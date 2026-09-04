@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cosmora TV</string>
+    <string name="radio_playback_channel_name">Radios de Cosmora</string>
+</resources>
