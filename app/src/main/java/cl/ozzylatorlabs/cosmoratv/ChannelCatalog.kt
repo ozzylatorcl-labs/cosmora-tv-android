@@ -1,10 +1,10 @@
 package cl.ozzylatorlabs.cosmoratv
 
 object ChannelCatalog {
-    // Cosmora TV V1.2
+    // Cosmora TV V1.3
     // Catálogo centrado en Chile y reproducción dentro de la app.
     // Se eliminaron accesos que solo abrían páginas externas, YouTube y señales extranjeras.
-    // FMH Broadcast queda pendiente hasta recibir autorización/licencia para sus señales de cine.
+    // Eternal Metal TV queda como candidato chileno pendiente de autorización directa del proyecto.
     val channels = listOf(
         Channel(
             name = "24 Horas",
@@ -33,9 +33,9 @@ object ChannelCatalog {
         Channel(
             name = "NTV",
             category = "Chile · Cultura · TVN",
-            streamUrl = "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
+            streamUrl = "https://marine2.miplay.cl/ntv/playlist.m3u8",
             websiteUrl = "https://www.tvn.cl/ntv",
-            note = "Señal online",
+            note = "Señal online actual",
             verifiedDirectStream = true
         ),
         Channel(
