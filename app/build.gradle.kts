@@ -12,8 +12,8 @@ android {
         applicationId = "cl.ozzylatorlabs.cosmoratv"
         minSdk = 23
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 6
+        versionName = "1.5"
     }
 
     buildFeatures { compose = true }
