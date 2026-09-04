@@ -1,29 +1,32 @@
 package cl.ozzylatorlabs.cosmoratv
 
 object ChannelCatalog {
-    // Cosmora TV prioriza señales gratuitas/públicas y proveedores usados por los propios canales.
-    // TVN y Canal 13 principal se muestran dentro de la app desde sus páginas oficiales.
-    // No se incluyen listas Xtream, canales premium retransmitidos ni proxies jmp2.uk.
+    // Catálogo revisado para Cosmora TV.
+    // Prioridad: player oficial enlazado por el propio canal, YouTube oficial o HLS público del proveedor del canal.
+    // No se usan proxies jmp2.uk ni URLs extraídas desde APIs privadas de otras apps.
+    // Las señales de 13Go que actualmente requieren suscripción no se incluyen como streams libres.
     val channels = listOf(
         Channel(
             name = "Mega",
             category = "Chile · Nacional",
             streamUrl = "https://unlimited1-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
             websiteUrl = "https://www.mega.cl/senal-en-vivo/",
+            note = "Señal online de Mega",
             verifiedDirectStream = true
         ),
         Channel(
-            name = "Chilevisión",
-            category = "Chile · Nacional",
-            streamUrl = "https://vmf.edge-online.chv.cl/chv/index.m3u8",
-            websiteUrl = "https://www.chilevision.cl/senal-online/",
-            verifiedDirectStream = true
+            name = "TVN",
+            category = "Chile · Nacional · Embed oficial",
+            webEmbedUrl = "https://live.tvn.cl/?volume=0",
+            websiteUrl = "https://www.tvn.cl/embed-no-borrar-senal-en-vivo",
+            note = "Player oficial de TVN"
         ),
         Channel(
             name = "24 Horas",
             category = "Chile · Noticias",
             streamUrl = "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
             websiteUrl = "https://www.24horas.cl/envivo/",
+            note = "Señal oficial 24 Horas",
             verifiedDirectStream = true
         ),
         Channel(
@@ -34,87 +37,73 @@ object ChannelCatalog {
             verifiedDirectStream = true
         ),
         Channel(
-            name = "TVN",
-            category = "Chile · Nacional · Web oficial",
-            webEmbedUrl = "https://www.tvn.cl/en-vivo",
-            websiteUrl = "https://www.tvn.cl/en-vivo",
-            note = "Señal oficial dentro de Cosmora"
-        ),
-        Channel(
-            name = "Canal 13",
-            category = "Chile · Nacional · Web oficial",
-            webEmbedUrl = "https://www.13.cl/en-vivo",
-            websiteUrl = "https://www.13.cl/en-vivo",
-            note = "Señal oficial dentro de Cosmora"
-        ),
-        Channel(
-            name = "13C",
-            category = "Chile · Canal 13",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "13 Festival",
-            category = "Chile · Música",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/Nftd0fM2SXasfDlRphvUsg/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "13 Realities",
-            category = "Chile · Entretención",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/g7_JOM0ORki9SR5RKHe-Kw/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "13 Teleseries",
-            category = "Chile · Entretención",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/f4TrySe8SoiGF8Lu3EIq1g/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "13 Humor",
-            category = "Chile · Entretención",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/cKWySXKgSK-SzlJmESkOWw/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "13 Kids",
-            category = "Chile · Infantil",
-            streamUrl = "https://origin.dpsgo.com/ssai/event/LhHrVtyeQkKZ-Ye_xEU75g/master.m3u8",
-            websiteUrl = "https://www.13.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "T13",
-            category = "Chile · Noticias",
-            streamUrl = "https://jireh-4-hls-video-cl-isp.dps.live/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist_900.m3u8",
-            websiteUrl = "https://www.t13.cl/en-vivo",
-            verifiedDirectStream = true
-        ),
-        Channel(
             name = "TV Chile",
-            category = "Chile · Internacional",
+            category = "Chile · TVN Internacional",
             streamUrl = "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
             websiteUrl = "https://www.tvn.cl/tvchile/envivo",
             verifiedDirectStream = true
         ),
         Channel(
             name = "NTV",
-            category = "Chile · Cultura",
+            category = "Chile · Cultura · TVN",
             streamUrl = "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
             websiteUrl = "https://www.tvn.cl/ntv",
             verifiedDirectStream = true
         ),
         Channel(
+            name = "Chilevisión",
+            category = "Chile · YouTube oficial",
+            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UC8EdTmyUaFIfZvVttJ9lgIA&autoplay=1&playsinline=1",
+            websiteUrl = "https://www.chilevision.cl/senal-online",
+            note = "YouTube oficial cuando CHV mantiene una transmisión en vivo"
+        ),
+        Channel(
+            name = "Canal 13",
+            category = "Chile · YouTube oficial",
+            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UCd4D3LfXC_9MY2zSv_3gMgw&autoplay=1&playsinline=1",
+            websiteUrl = "https://www.13go.cl/en-vivo?sid=13",
+            note = "YouTube oficial cuando El 13 transmite en vivo"
+        ),
+        Channel(
+            name = "T13",
+            category = "Chile · Noticias · YouTube oficial",
+            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UCsRnhjcUCR78Q3Ud6OXCTNg&autoplay=1&playsinline=1",
+            websiteUrl = "https://www.t13.cl/en-vivo",
+            note = "T13 EN VIVO oficial"
+        ),
+        Channel(
             name = "TV+",
-            category = "Chile · Entretención",
-            streamUrl = "https://mdstrm.com/live-stream-playlist/5c0e8b19e4c87f3f2d3e6a59.m3u8",
-            websiteUrl = "https://www.tvmas.tv/envivo/",
+            category = "Chile · Entretención · Player oficial",
+            webEmbedUrl = "https://rudo.video/live/tvmas",
+            websiteUrl = "https://www.tvmas.tv/page/en-vivo/",
+            note = "Player enlazado por TV+"
+        ),
+        Channel(
+            name = "Canal 9 Bío Bío",
+            category = "Chile · Regional · Player oficial",
+            webEmbedUrl = "https://rudo.video/live/c9",
+            websiteUrl = "https://www.canal9.cl/",
+            note = "Player enlazado por Canal 9"
+        ),
+        Channel(
+            name = "TVU",
+            category = "Chile · Universidad de Concepción · Player oficial",
+            webEmbedUrl = "https://rudo.video/live/tvu",
+            websiteUrl = "https://www.tvu.cl/vivo",
+            note = "Player enlazado por TVU"
+        ),
+        Channel(
+            name = "UChile TV",
+            category = "Chile · Universidad de Chile · Player oficial",
+            webEmbedUrl = "https://rudo.video/live/uchiletv",
+            websiteUrl = "https://tv.uchile.cl/",
+            note = "Player enlazado por UChileTV"
+        ),
+        Channel(
+            name = "Antofagasta TV",
+            category = "Chile · Regional",
+            streamUrl = "https://unlimited6-cl.dps.live/atv/atv.smil/playlist.m3u8",
+            websiteUrl = "https://www.antofagasta.tv/senal-en-vivo",
             verifiedDirectStream = true
         ),
         Channel(
@@ -122,27 +111,6 @@ object ChannelCatalog {
             category = "Chile · Valparaíso",
             streamUrl = "https://unlimited2-cl-isp.dps.live/ucvtv2/ucvtv2.smil/playlist.m3u8",
             websiteUrl = "https://www.ucvtv.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "Canal 9 Bío Bío",
-            category = "Chile · Regional",
-            streamUrl = "https://unlimited6-cl.dps.live/c9/c9.smil/playlist.m3u8",
-            websiteUrl = "https://www.canal9.cl/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "Antofagasta TV",
-            category = "Chile · Regional",
-            streamUrl = "https://unlimited6-cl.dps.live/atv/atv.smil/playlist.m3u8",
-            websiteUrl = "https://www.antofagasta.tv/",
-            verifiedDirectStream = true
-        ),
-        Channel(
-            name = "UChile TV",
-            category = "Chile · Cultura",
-            streamUrl = "https://unlimited1-us.dps.live/uchiletv/uchiletv.smil/playlist.m3u8",
-            websiteUrl = "https://uchile.tv/",
             verifiedDirectStream = true
         ),
         Channel(
