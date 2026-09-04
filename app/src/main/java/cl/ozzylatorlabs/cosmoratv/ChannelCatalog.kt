@@ -4,7 +4,8 @@ object ChannelCatalog {
     // Catálogo revisado para Cosmora TV.
     // Prioridad: player oficial enlazado por el propio canal, YouTube oficial o HLS público del proveedor del canal.
     // No se usan proxies jmp2.uk ni URLs extraídas desde APIs privadas de otras apps.
-    // Las señales de 13Go que actualmente requieren suscripción no se incluyen como streams libres.
+    // CHV y TV+ restauran los HLS exactos de la APK base que el usuario ya había probado funcionando.
+    // Antes de publicar en Google Play se hará una última auditoría de derechos/uso de cada señal.
     val channels = listOf(
         Channel(
             name = "Mega",
@@ -13,6 +14,14 @@ object ChannelCatalog {
             websiteUrl = "https://www.mega.cl/senal-en-vivo/",
             note = "Señal online de Mega",
             verifiedDirectStream = true
+        ),
+        Channel(
+            name = "Chilevisión",
+            category = "Chile · Nacional",
+            streamUrl = "https://origin.dpsgo.com/ssai/event/R6cwOFyHQXaW6-kMcfWYKA/master.m3u8",
+            websiteUrl = "https://www.chilevision.cl/senal-online/",
+            note = "HLS funcional recuperado de la APK base",
+            verifiedDirectStream = false
         ),
         Channel(
             name = "TVN",
@@ -51,13 +60,6 @@ object ChannelCatalog {
             verifiedDirectStream = true
         ),
         Channel(
-            name = "Chilevisión",
-            category = "Chile · YouTube oficial",
-            webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UC8EdTmyUaFIfZvVttJ9lgIA&autoplay=1&playsinline=1",
-            websiteUrl = "https://www.chilevision.cl/senal-online",
-            note = "YouTube oficial cuando CHV mantiene una transmisión en vivo"
-        ),
-        Channel(
             name = "Canal 13",
             category = "Chile · YouTube oficial",
             webEmbedUrl = "https://www.youtube.com/embed/live_stream?channel=UCd4D3LfXC_9MY2zSv_3gMgw&autoplay=1&playsinline=1",
@@ -73,10 +75,11 @@ object ChannelCatalog {
         ),
         Channel(
             name = "TV+",
-            category = "Chile · Entretención · Player oficial",
-            webEmbedUrl = "https://rudo.video/live/tvmas",
+            category = "Chile · Entretención",
+            streamUrl = "https://jireh-8-hls-video-us-isp.dps.live/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
             websiteUrl = "https://www.tvmas.tv/page/en-vivo/",
-            note = "Player enlazado por TV+"
+            note = "HLS funcional recuperado de la APK base",
+            verifiedDirectStream = false
         ),
         Channel(
             name = "Canal 9 Bío Bío",
