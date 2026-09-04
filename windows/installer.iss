@@ -1,5 +1,5 @@
 #define MyAppName "Cosmora TV"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Ozzylator Labs"
 #define MyAppExeName "CosmoraTV.exe"
 
@@ -12,7 +12,7 @@ DefaultDirName={autopf}\Ozzylator Labs\Cosmora TV
 DefaultGroupName=Cosmora TV
 DisableProgramGroupPage=yes
 OutputDir=dist
-OutputBaseFilename=Cosmora-TV-Windows-Setup-V1.0
+OutputBaseFilename=Cosmora-TV-Windows-Setup-V1.1
 SetupIconFile=CosmoraTV.Windows\cosmora.ico
 Compression=lzma2
 SolidCompression=yes
