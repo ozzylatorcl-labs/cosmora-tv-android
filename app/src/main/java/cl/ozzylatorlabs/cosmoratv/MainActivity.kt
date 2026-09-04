@@ -1,11 +1,12 @@
 package cl.ozzylatorlabs.cosmoratv
 
-import android.content.Intent
-import android.net.Uri
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -27,8 +28,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -55,7 +54,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun CosmoraTvApp() {
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val channels = remember { ChannelCatalog.channels }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var fullScreen by remember { mutableStateOf(false) }
@@ -105,35 +104,9 @@ private fun CosmoraTvApp() {
 
     BackHandler(enabled = fullScreen) { fullScreen = false }
 
-    MaterialTheme(
-        colorScheme = darkColorScheme(background = Bg, surface = Panel, primary = Focus)
-    ) {
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Bg)
-                .onPreviewKeyEvent { event ->
-                    val native = event.nativeKeyEvent
-                    if (native.action != KeyEvent.ACTION_DOWN) return@onPreviewKeyEvent false
-                    when (native.keyCode) {
-                        KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP -> {
-                            changeChannel(-1); true
-                        }
-                        KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> {
-                            changeChannel(1); true
-                        }
-                        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-                            if (player.isPlaying) player.pause() else player.play(); true
-                        }
-                        KeyEvent.KEYCODE_MEDIA_STOP -> {
-                            player.pause(); true
-                        }
-                        else -> false
-                    }
-                }
-        ) {
+    MaterialTheme(colorScheme = darkColorScheme(background = Bg, surface = Panel, primary = Focus)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(Bg)) {
             val tvLayout = maxWidth >= 820.dp
-
             when {
                 fullScreen -> FullScreenPlayer(
                     player = player,
@@ -142,33 +115,17 @@ private fun CosmoraTvApp() {
                     onExit = { fullScreen = false },
                     onRetry = { player.prepare(); player.play() }
                 )
-
                 tvLayout -> TvHome(
-                    channels = channels,
-                    selectedIndex = selectedIndex,
-                    player = player,
-                    playerError = playerError,
-                    muted = muted,
-                    onSelected = { selectedIndex = it },
-                    onPrevious = { changeChannel(-1) },
-                    onNext = { changeChannel(1) },
-                    onMute = { muted = !muted },
-                    onFullScreen = { fullScreen = true },
-                    onRetry = { player.prepare(); player.play() }
+                    channels, selectedIndex, player, playerError, muted,
+                    { selectedIndex = it }, { changeChannel(-1) }, { changeChannel(1) },
+                    { muted = !muted }, { fullScreen = true },
+                    { player.prepare(); player.play() }
                 )
-
                 else -> MobileHome(
-                    channels = channels,
-                    selectedIndex = selectedIndex,
-                    player = player,
-                    playerError = playerError,
-                    muted = muted,
-                    onSelected = { selectedIndex = it },
-                    onPrevious = { changeChannel(-1) },
-                    onNext = { changeChannel(1) },
-                    onMute = { muted = !muted },
-                    onFullScreen = { fullScreen = true },
-                    onRetry = { player.prepare(); player.play() }
+                    channels, selectedIndex, player, playerError, muted,
+                    { selectedIndex = it }, { changeChannel(-1) }, { changeChannel(1) },
+                    { muted = !muted }, { fullScreen = true },
+                    { player.prepare(); player.play() }
                 )
             }
         }
@@ -183,15 +140,12 @@ private fun FullScreenPlayer(
     onExit: () -> Unit,
     onRetry: () -> Unit
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
         PlayerPanel(player, channel, playerError, Modifier.fillMaxSize(), onRetry)
-        FocusButton(
-            modifier = Modifier.align(Alignment.TopEnd).padding(22.dp),
-            onClick = onExit
-        ) {
-            Icon(Icons.Default.FullscreenExit, contentDescription = null)
+        FocusButton(Modifier.align(Alignment.TopEnd).padding(18.dp), onExit) {
+            Icon(Icons.Default.FullscreenExit, null)
             Spacer(Modifier.width(8.dp))
-            Text("Salir de pantalla completa")
+            Text("Volver")
         }
     }
 }
@@ -211,37 +165,56 @@ private fun TvHome(
     onRetry: () -> Unit
 ) {
     Row(
-        Modifier.fillMaxSize().padding(26.dp),
-        horizontalArrangement = Arrangement.spacedBy(24.dp)
+        Modifier.fillMaxSize().padding(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(22.dp)
     ) {
         NavigationRailPanel(Modifier.width(185.dp))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-            Header()
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                Column(Modifier.weight(1.75f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    PlayerPanel(
-                        player,
-                        channels[selectedIndex],
-                        playerError,
-                        Modifier.weight(1f),
-                        onRetry
-                    )
-                    Controls(
-                        player,
-                        channels[selectedIndex],
-                        muted,
-                        onPrevious,
-                        onNext,
-                        onMute,
-                        onFullScreen
+
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Header(channels.size)
+
+            Row(
+                Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                PlayerPanel(
+                    player,
+                    channels[selectedIndex],
+                    playerError,
+                    Modifier.weight(1f).fillMaxHeight(),
+                    onRetry
+                )
+
+                Column(
+                    Modifier.width(225.dp).fillMaxHeight().background(Panel, RoundedCornerShape(22.dp)).padding(18.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Default.Tv, null, tint = Focus, modifier = Modifier.size(40.dp))
+                    Spacer(Modifier.height(14.dp))
+                    Text("Pensado para mando", color = Color.White, fontSize = 18.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text("↑  ↓  ←  →   OK\nAtrás · Play/Pausa", color = TextMuted, fontSize = 14.sp, lineHeight = 22.sp)
+                    Spacer(Modifier.height(22.dp))
+                    Text("${channels.size} señales", color = Color.White, fontSize = 17.sp)
+                    Text("Nacionales, noticias, música y regionales", color = TextMuted, fontSize = 12.sp, lineHeight = 17.sp)
+                }
+            }
+
+            Controls(player, channels[selectedIndex], muted, onPrevious, onNext, onMute, onFullScreen)
+
+            Text("Canales", color = Color.White, fontSize = 23.sp)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 4.dp)
+            ) {
+                itemsIndexed(channels) { index, channel ->
+                    ChannelCard(
+                        channel = channel,
+                        selected = index == selectedIndex,
+                        onClick = { onSelected(index) },
+                        modifier = Modifier.width(190.dp)
                     )
                 }
-                ChannelList(
-                    channels,
-                    selectedIndex,
-                    onSelected,
-                    Modifier.weight(1f).fillMaxHeight()
-                )
             }
         }
     }
@@ -263,9 +236,9 @@ private fun MobileHome(
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Header()
+        Header(channels.size)
         PlayerPanel(
             player,
             channels[selectedIndex],
@@ -273,34 +246,24 @@ private fun MobileHome(
             Modifier.fillMaxWidth().aspectRatio(16f / 9f),
             onRetry
         )
-        Controls(
-            player,
-            channels[selectedIndex],
-            muted,
-            onPrevious,
-            onNext,
-            onMute,
-            onFullScreen
-        )
-        Text("Canales", fontSize = 22.sp, color = Color.White)
+        Controls(player, channels[selectedIndex], muted, onPrevious, onNext, onMute, onFullScreen)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Canales", color = Color.White, fontSize = 22.sp, modifier = Modifier.weight(1f))
+            Text("${channels.size} señales", color = TextMuted, fontSize = 13.sp)
+        }
         ChannelList(channels, selectedIndex, onSelected, Modifier.weight(1f).fillMaxWidth())
     }
 }
 
 @Composable
-private fun Header() {
+private fun Header(channelCount: Int) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text("Cosmora TV", color = Color.White, fontSize = 30.sp)
-            Text("Tu universo en una pantalla · Ozzylator Labs", color = TextMuted, fontSize = 14.sp)
+            Text("Tu universo en una pantalla · $channelCount señales", color = TextMuted, fontSize = 14.sp)
         }
         Surface(color = Live, shape = RoundedCornerShape(18.dp)) {
-            Text(
-                "EN VIVO",
-                color = Color.White,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
-            )
+            Text("EN VIVO", color = Color.White, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp))
         }
     }
 }
@@ -308,10 +271,7 @@ private fun Header() {
 @Composable
 private fun NavigationRailPanel(modifier: Modifier = Modifier) {
     Column(
-        modifier
-            .fillMaxHeight()
-            .background(Panel, RoundedCornerShape(22.dp))
-            .padding(14.dp),
+        modifier.fillMaxHeight().background(Panel, RoundedCornerShape(22.dp)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("COSMORA TV", color = Color.White, fontSize = 19.sp, modifier = Modifier.padding(8.dp))
@@ -320,35 +280,23 @@ private fun NavigationRailPanel(modifier: Modifier = Modifier) {
         NavItem("Favoritos", Icons.Default.Star, false)
         NavItem("Ajustes", Icons.Default.Settings, false)
         Spacer(Modifier.weight(1f))
-        Text(
-            "↑ ↓ ← →  OK\nAtrás · Play/Pausa",
-            color = TextMuted,
-            fontSize = 12.sp,
-            lineHeight = 18.sp,
-            modifier = Modifier.padding(8.dp)
-        )
+        Text("Ozzylator Labs", color = TextMuted, fontSize = 12.sp, modifier = Modifier.padding(8.dp))
     }
 }
 
 @Composable
-private fun NavItem(
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    active: Boolean
-) {
+private fun NavItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, active: Boolean) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            .background(if (active) Panel2 else Color.Transparent, RoundedCornerShape(14.dp))
-            .padding(12.dp),
+        Modifier.fillMaxWidth().background(if (active) Panel2 else Color.Transparent, RoundedCornerShape(14.dp)).padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = if (active) Color.White else TextMuted)
+        Icon(icon, null, tint = if (active) Color.White else TextMuted)
         Spacer(Modifier.width(10.dp))
         Text(label, color = if (active) Color.White else TextMuted, fontSize = 15.sp)
     }
 }
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun PlayerPanel(
     player: ExoPlayer,
@@ -357,70 +305,69 @@ private fun PlayerPanel(
     modifier: Modifier,
     onRetry: () -> Unit
 ) {
-    val context = LocalContext.current
-
-    Box(modifier.background(Color.Black, RoundedCornerShape(24.dp))) {
-        if (channel.playsInsideApp) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    PlayerView(ctx).apply {
-                        this.player = player
-                        useController = false
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                    }
-                },
-                update = { it.player = player }
-            )
-        } else {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF101827), RoundedCornerShape(24.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Public, null, tint = Focus, modifier = Modifier.size(56.dp))
-                    Spacer(Modifier.height(12.dp))
-                    Text("Señal oficial", color = Color.White, fontSize = 24.sp)
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        "Se abre desde el sitio oficial del canal.",
-                        color = TextMuted,
-                        fontSize = 14.sp
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    if (!channel.websiteUrl.isNullOrBlank()) {
-                        FocusButton(onClick = {
-                            runCatching {
-                                context.startActivity(
-                                    Intent(Intent.ACTION_VIEW, Uri.parse(channel.websiteUrl))
-                                )
-                            }
-                        }) {
-                            Icon(Icons.Default.OpenInNew, null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Abrir señal oficial")
+    Box(modifier.background(Color.Black, RoundedCornerShape(22.dp))) {
+        when {
+            channel.playsInsideApp -> {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            this.player = player
+                            useController = false
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
                         }
-                    }
+                    },
+                    update = { it.player = player }
+                )
+            }
+
+            channel.playsAsWeb -> {
+                key(channel.webEmbedUrl) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { ctx ->
+                            WebView(ctx).apply {
+                                setBackgroundColor(android.graphics.Color.BLACK)
+                                settings.javaScriptEnabled = true
+                                settings.domStorageEnabled = true
+                                settings.mediaPlaybackRequiresUserGesture = false
+                                settings.loadsImagesAutomatically = true
+                                webViewClient = WebViewClient()
+                                webChromeClient = WebChromeClient()
+                                loadUrl(channel.webEmbedUrl!!)
+                            }
+                        },
+                        update = { webView ->
+                            if (webView.url != channel.webEmbedUrl) webView.loadUrl(channel.webEmbedUrl!!)
+                        }
+                    )
+                }
+            }
+
+            else -> {
+                Box(Modifier.fillMaxSize().background(Color(0xFF101827)), contentAlignment = Alignment.Center) {
+                    Text("Señal no disponible", color = Color.White, fontSize = 20.sp)
                 }
             }
         }
 
-        Column(Modifier.align(Alignment.TopStart).padding(18.dp)) {
-            Text(channel.name, color = Color.White, fontSize = 24.sp)
-            Text(channel.category, color = TextMuted, fontSize = 13.sp)
+        Surface(
+            modifier = Modifier.align(Alignment.TopStart).padding(14.dp),
+            color = Color(0xCC11151D),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(Modifier.padding(horizontal = 13.dp, vertical = 8.dp)) {
+                Text(channel.name, color = Color.White, fontSize = 19.sp)
+                Text(channel.category, color = TextMuted, fontSize = 11.sp)
+            }
         }
 
         if (playerError != null && channel.playsInsideApp) {
             Column(
-                Modifier
-                    .align(Alignment.Center)
-                    .background(Color(0xDD161A22), RoundedCornerShape(18.dp))
-                    .padding(22.dp),
+                Modifier.align(Alignment.Center).background(Color(0xE8161A22), RoundedCornerShape(18.dp)).padding(22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(playerError, color = Color.White)
@@ -445,23 +392,17 @@ private fun Controls(
     onMute: () -> Unit,
     onFullScreen: () -> Unit
 ) {
-    val context = LocalContext.current
     var isPlaying by remember { mutableStateOf(player.isPlaying) }
 
     DisposableEffect(player) {
         val listener = object : Player.Listener {
-            override fun onIsPlayingChanged(value: Boolean) {
-                isPlaying = value
-            }
+            override fun onIsPlayingChanged(value: Boolean) { isPlaying = value }
         }
         player.addListener(listener)
         onDispose { player.removeListener(listener) }
     }
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(vertical = 2.dp)
-    ) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(9.dp), contentPadding = PaddingValues(vertical = 2.dp)) {
         item {
             FocusButton(onClick = onPrevious) {
                 Icon(Icons.Default.SkipPrevious, null)
@@ -469,7 +410,6 @@ private fun Controls(
                 Text("Anterior")
             }
         }
-
         if (channel.playsInsideApp) {
             item {
                 FocusButton(onClick = { if (player.isPlaying) player.pause() else player.play() }) {
@@ -485,27 +425,24 @@ private fun Controls(
                     Text(if (muted) "Sonido" else "Silenciar")
                 }
             }
+        } else if (channel.playsAsWeb) {
             item {
-                FocusButton(onClick = onFullScreen) {
-                    Icon(Icons.Default.Fullscreen, null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Pantalla")
-                }
-            }
-        } else if (!channel.websiteUrl.isNullOrBlank()) {
-            item {
-                FocusButton(onClick = {
-                    runCatching {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(channel.websiteUrl)))
+                Surface(color = Color(0xFF263146), shape = RoundedCornerShape(15.dp)) {
+                    Row(Modifier.padding(horizontal = 14.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Public, null, tint = Focus)
+                        Spacer(Modifier.width(7.dp))
+                        Text("Web oficial", color = Color.White)
                     }
-                }) {
-                    Icon(Icons.Default.OpenInNew, null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Señal oficial")
                 }
             }
         }
-
+        item {
+            FocusButton(onClick = onFullScreen) {
+                Icon(Icons.Default.Fullscreen, null)
+                Spacer(Modifier.width(6.dp))
+                Text("Pantalla")
+            }
+        }
         item {
             FocusButton(onClick = onNext) {
                 Icon(Icons.Default.SkipNext, null)
@@ -523,54 +460,47 @@ private fun ChannelList(
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(bottom = 18.dp)
-    ) {
+    LazyColumn(modifier, verticalArrangement = Arrangement.spacedBy(9.dp), contentPadding = PaddingValues(bottom = 18.dp)) {
         itemsIndexed(channels) { index, channel ->
-            ChannelCard(
-                channel,
-                selected = index == selectedIndex,
-                onClick = { onSelected(index) }
-            )
+            ChannelCard(channel, index == selectedIndex, { onSelected(index) }, Modifier.fillMaxWidth())
         }
     }
 }
 
 @Composable
-private fun ChannelCard(channel: Channel, selected: Boolean, onClick: () -> Unit) {
+private fun ChannelCard(
+    channel: Channel,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
-    val borderColor = when {
-        focused -> Focus
-        selected -> Color(0xFF526C9E)
-        else -> Color.Transparent
-    }
+    val borderColor = if (focused) Focus else if (selected) Color(0xFF526C9E) else Color.Transparent
     val bg = if (focused || selected) Panel2 else Panel
 
     Row(
-        Modifier
-            .fillMaxWidth()
-            .background(bg, RoundedCornerShape(18.dp))
-            .border(if (focused) 3.dp else 1.dp, borderColor, RoundedCornerShape(18.dp))
+        modifier
+            .heightIn(min = 66.dp)
+            .background(bg, RoundedCornerShape(17.dp))
+            .border(if (focused) 3.dp else 1.dp, borderColor, RoundedCornerShape(17.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .focusable(interactionSource = interaction)
-            .padding(14.dp),
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            Modifier.size(48.dp).background(Color(0xFF34425C), RoundedCornerShape(12.dp)),
+            Modifier.size(42.dp).background(Color(0xFF34425C), RoundedCornerShape(11.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.LiveTv, null, tint = Color.White)
+            Icon(if (channel.playsAsWeb) Icons.Default.Public else Icons.Default.LiveTv, null, tint = Color.White)
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text(channel.name, color = Color.White, fontSize = 16.sp)
-            Text(channel.category, color = TextMuted, fontSize = 12.sp)
+            Text(channel.name, color = Color.White, fontSize = 15.sp, maxLines = 1)
+            Text(channel.category, color = TextMuted, fontSize = 11.sp, maxLines = 1)
         }
-        if (selected) Icon(Icons.Default.PlayCircle, null, tint = Focus)
+        if (selected) Icon(Icons.Default.PlayCircle, null, tint = Focus, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -582,15 +512,10 @@ private fun FocusButton(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
-
     Row(
         modifier
             .background(if (focused) Color(0xFF2B3B59) else Panel2, RoundedCornerShape(15.dp))
-            .border(
-                if (focused) 3.dp else 1.dp,
-                if (focused) Focus else Color(0xFF39445A),
-                RoundedCornerShape(15.dp)
-            )
+            .border(if (focused) 3.dp else 1.dp, if (focused) Focus else Color(0xFF39445A), RoundedCornerShape(15.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .focusable(interactionSource = interaction)
             .padding(horizontal = 14.dp, vertical = 11.dp),
