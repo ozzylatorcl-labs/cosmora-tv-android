@@ -39,13 +39,13 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk Cosmora-TV-V1.2.apk
-          cp app/build/outputs/bundle/debug/app-debug.aab Cosmora-TV-V1.2.aab
+          cp app/build/outputs/apk/debug/app-debug.apk Cosmora-TV-V1.3.apk
+          cp app/build/outputs/bundle/debug/app-debug.aab Cosmora-TV-V1.3.aab
 
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: Cosmora-TV-V1.2
+          name: Cosmora-TV-V1.3
           path: |
-            Cosmora-TV-V1.2.apk
-            Cosmora-TV-V1.2.aab
+            Cosmora-TV-V1.3.apk
+            Cosmora-TV-V1.3.aab
