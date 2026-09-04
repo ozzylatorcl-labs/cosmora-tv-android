@@ -1,10 +1,9 @@
 package cl.ozzylatorlabs.cosmoratv
 
 object ChannelCatalog {
-    // Cosmora TV V1.3
-    // Catálogo centrado en Chile y reproducción dentro de la app.
-    // Se eliminaron accesos que solo abrían páginas externas, YouTube y señales extranjeras.
-    // Eternal Metal TV queda como candidato chileno pendiente de autorización directa del proyecto.
+    // Cosmora TV V1.4
+    // Catálogo chileno: señales directas y players oficiales reproducidos dentro de la app.
+    // Sin YouTube, sin señales extranjeras y sin accesos que abran el navegador externo.
     val channels = listOf(
         Channel(
             name = "24 Horas",
@@ -13,6 +12,27 @@ object ChannelCatalog {
             websiteUrl = "https://www.24horas.cl/envivo/",
             note = "Señal online",
             verifiedDirectStream = true
+        ),
+        Channel(
+            name = "La Red",
+            category = "Chile · TV Abierta · Entretención",
+            webEmbedUrl = "https://www.lared.cl/player",
+            websiteUrl = "https://www.lared.cl/",
+            note = "Player oficial dentro de Cosmora"
+        ),
+        Channel(
+            name = "TV+",
+            category = "Chile · TV Abierta · Entretención",
+            webEmbedUrl = "https://rudo.video/live/tvmas",
+            websiteUrl = "https://www.tvmas.tv/page/en-vivo/",
+            note = "Player oficial dentro de Cosmora"
+        ),
+        Channel(
+            name = "TVN",
+            category = "Chile · TV Abierta · Nacional",
+            webEmbedUrl = "https://live.tvn.cl/?volume=0",
+            websiteUrl = "https://www.tvn.cl/",
+            note = "Player oficial dentro de Cosmora"
         ),
         Channel(
             name = "TVN3",
